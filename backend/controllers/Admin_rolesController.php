@@ -103,44 +103,42 @@ class Admin_rolesController extends Controller
     public function actionUpdate($id)
     {
         $auth = Yii::$app->authManager;
-
-        // Fetch the model based on user ID
         $model = $this->findModel($id);
 
-        // Fetch all roles and permissions from the auth manager
+        // Barcha rol va permissionlarni olish
         $roles = $auth->getRoles();
         $permissions = $auth->getPermissions();
 
-        // Fetch currently assigned permissions
+        // Foydalanuvchiga hozirda assign qilingan permissionlarni olish
         $assignedPermissions = array_keys($auth->getPermissionsByUser($model->user_id));
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->validate()) {
-            // Get the role by its name
+            // Role ni olish
             $role = $auth->getRole($model->role_name);
             if (!$role) {
-                throw new \yii\web\NotFoundHttpException('The requested role does not exist.');
+                throw new \yii\web\NotFoundHttpException('Requested role not found.');
             }
 
-            // Revoke all previous roles and permissions
+            // Avvalgi role va permissionlarni olib tashlash
             $auth->revokeAll($model->user_id);
 
-            // Assign the new role to the user
+            // Yangi role ni assign qilish
             $auth->assign($role, $model->user_id);
 
-            // Automatically assign permissions associated with the role
-            $rolePermissions = $auth->getPermissionsByRole($model->role_name);
-            foreach ($rolePermissions as $permission) {
-                $auth->assign($permission, $model->user_id);
-            }
-
-            // Additionally assign new permissions selected by the user
+            // Yangi permissionlarni assign qilish
             if (is_array($model->permissions)) {
+                // Role bilan bog'liq bo'lgan barcha eski permissionlarni olib tashlash
+                $rolePermissions = $auth->getPermissionsByRole($model->role_name);
+                foreach ($rolePermissions as $permission) {
+                    $auth->removeChild($role, $permission);
+                }
+
+                // Foydalanuvchi tomonidan tanlangan yangi permissionlarni qo'shish
                 foreach ($model->permissions as $permissionName) {
-                    if (!isset($rolePermissions[$permissionName])) {
-                        $permission = $auth->getPermission($permissionName);
-                        if ($permission) {
-                            $auth->assign($permission, $model->user_id);
-                        }
+                    $permission = $auth->getPermission($permissionName);
+                    if ($permission) {
+                        $auth->addChild($role, $permission);
+                        $auth->assign($permission, $model->user_id);
                     }
                 }
             }

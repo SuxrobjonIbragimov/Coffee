@@ -44,7 +44,9 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'price')->textInput() ?>
 
-<!--    --><?php //= $form->field($model, 'discount_price')->textInput() ?>
+    <?= $form->field($model, 'count')->textInput() ?>
+
+    <!--    --><?php //= $form->field($model, 'discount_price')->textInput() ?>
 
     <?= $form->field($model, 'status')->dropDownList(
         [1 => 'Active', 0 => 'Not active'],

@@ -136,20 +136,20 @@ $viewedCount = \frontend\models\Vieweds::find()->count();
                             <i style="font-size: 23px" class="fa-solid fa-user"></i>
                         </a>
                         <?php else: ?>
-                        <a style="color: var(--text-color)" href="<?= Url::to(['/profile/index']) ?>">
+                        <a style="color: var(--text-color)" href="<?= Url::to(['/profile/index', 'scroll' => 1]) ?>">
                             <i style="font-size: 23px" class="fa-solid fa-user"></i>
                         </a>
+
                         <?= Html::beginForm(['/site/logout'], 'post') ?>
                         <button type="submit" style="background:none;border:none;color: var(--text-color);">
                             <i style="font-size: 23px" class="fa-solid fa-sign-out"></i>
                         </button>
                         <?= Html::endForm() ?>
                     <?php endif; ?>
-                        <a href="<?= Url::to(['basket/index']) ?>">
-                            <i style="color: var(--text-color); font-size: 25px" class="fa-solid fa-bag-shopping">&nbsp;
-<!--                                --><?php //= count($basketItems) ?>
-                            </i>
-                        </a>&nbsp;
+                    <a href="<?= Url::to(['basket/index', 'scroll' => 1]) ?>">
+                        <i style="color: var(--text-color); font-size: 25px" class="fa-solid fa-bag-shopping">&nbsp;</i>
+                    </a>&nbsp;
+
                     <div class="lang">
                         <form action="/site/changelang" method="get" id="form-uz">
                             <input type="hidden" name="lang" value="uz">
@@ -239,11 +239,12 @@ $viewedCount = \frontend\models\Vieweds::find()->count();
                 <div class="specialty__category" id="specialtyCategory">
                     <?php foreach ($specialtyProducts as $index => $product): ?>
                         <div class="specialty__group specialty__line <?= $index >= 3 ? 'hidden' : '' ?>">
-                            <a href="<?= Url::to(['/about/index', 'id' => $product->id]) ?>" class="quality__button">
+                            <a href="<?= Url::to(['/about/index', 'id' => $product->id, 'scroll' => 1]) ?>" class="quality__button">
                                 <?php if (!empty($product->images)): ?>
                                     <img src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" alt="<?= Html::encode($product->{'name_' . $currentLang}) ?>" class="specialty__img">
                                 <?php endif; ?>
                             </a>
+
                             <h3 class="specialty__title"><?= Html::encode($product->{'name_' . $currentLang}) ?></h3>
                             <p class="specialty__description">
                                 <?= Html::encode($product->{'description_' . $currentLang}) ?>
@@ -291,7 +292,7 @@ $viewedCount = \frontend\models\Vieweds::find()->count();
                             <article class="products__card <?= strtolower(Html::encode($categoryName)) ?>">
                                 <div class="products__shape">
                                     <?php if (!empty($product->images)): ?>
-                                        <a href="<?= Url::to(['/about/index', 'id' => $product->id]) ?>">
+                                        <a href="<?= Url::to(['/about/index', 'id' => $product->id, 'scroll' => 1]) ?>">
                                             <img style="height: 13rem" src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" class="products__img" alt="<?= Html::encode($product->name) ?>">
                                         </a>
                                     <?php endif; ?>
@@ -321,7 +322,7 @@ $viewedCount = \frontend\models\Vieweds::find()->count();
                 <div class="quality__content grid">
                     <?php foreach ($premiumProducts as $index => $product): ?>
                         <div class="quality__images" data-index="<?= $index ?>" style="<?= $index > 0 ? 'display:none;' : '' ?>">
-                            <a href="<?= Url::to(['/about/index', 'id' => $product->id]) ?>">
+                            <a href="<?= Url::to(['/about/index', 'id' => $product->id, 'scroll' => 1]) ?>">
                                 <?php if (!empty($product->images)): ?>
                                     <img src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" alt="<?= Html::encode($product->name) ?>" class="quality__img-big">
                                     <img src="<?= Yii::getAlias('@web/coffee/img/quality2.png') ?>" alt="<?= Html::encode($product->name) ?>" class="quality__img-small">
@@ -369,7 +370,7 @@ $viewedCount = \frontend\models\Vieweds::find()->count();
         </section>
 
         <!--==================== BLOG ====================-->
-        <section class="blog section" id="blog">
+        <section class="blog section" id="blog" >
             <div class="blog__container container">
                 <h2 class="section__title">
                     <?=Yii::t('app','Our Blogs Coffee with trending topic for this week')?>
@@ -382,7 +383,7 @@ $viewedCount = \frontend\models\Vieweds::find()->count();
                                 <?php if (!empty($product->images)): ?>
                                     <img src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" alt="<?= Html::encode($product->name) ?>" class="blog__img">
                                 <?php endif; ?>
-                                <a href="<?= Url::to(['/about/index', 'id' => $product->id]) ?>" class="blog__button">
+                                <a href="<?= Url::to(['/about/index', 'id' => $product->id, 'scroll' => 1]) ?>" class="blog__button">
                                     <i class="bx bx-right-arrow-alt"></i>
                                 </a>
                             </div>
@@ -487,6 +488,7 @@ $viewedCount = \frontend\models\Vieweds::find()->count();
     <a href="#" class="scrollup" id="scroll-up">
         <i class="bx bx-up-arrow-alt"></i>
     </a>
+
     <script>
             document.addEventListener('DOMContentLoaded', function () {
             const buttons = document.querySelectorAll('.add-to-basket');
@@ -551,6 +553,17 @@ document.getElementById('seeMoreButton').addEventListener('click', function() {
 JS;
     $this->registerJs($script);
     ?>
+
+    <?php
+    if (Yii::$app->request->get('scroll')) {
+        $this->registerJs("
+        $('html, body').animate({
+            scrollTop: $('#target-section').offset().top
+        }, 100);
+    ");
+    }
+    ?>
+
 
 <script>
     document.getElementById('see-more').addEventListener('click', function () {

@@ -278,7 +278,7 @@ $currentLang = Yii::$app->session->get('lang', 'uz');
     </style>
 </head>
 <body>
-<div class="containers">
+<div class="containers" id="target-section">
     <div class="about">
         <h1><?= Html::encode($profile->name) ?>&nbsp;<?= Html::encode($profile->surname) ?></h1>
         <a href="#" id="orders-link" onclick="setActiveTab(event, 'orders-container');"><?= Yii::t('app', 'My orders') ?></a>
@@ -289,9 +289,9 @@ $currentLang = Yii::$app->session->get('lang', 'uz');
             <li class="nav-item">
                 <a style="margin-left: 23px;" class="nav-link active" href="#" onclick="setActiveSubTab(event, 'all-orders');"><?= Yii::t('app', 'All orders') ?></a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="setActiveSubTab(event, 'active-orders');"><?= Yii::t('app', 'Active') ?></a>
-            </li>
+<!--            <li class="nav-item">-->
+<!--                <a class="nav-link" href="#" onclick="setActiveSubTab(event, 'active-orders');">--><?php //= Yii::t('app', 'Active') ?><!--</a>-->
+<!--            </li>-->
         </ul>
 
         <div id="all-orders" class="content-wrapper" style="display: block;">

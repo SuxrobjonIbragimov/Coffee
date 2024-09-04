@@ -24,10 +24,26 @@ class ProfileController extends Controller
         $profile = \frontend\models\Profile::findOne(['user_id' => $userId]);
         $user = User::findOne(['id' => $userId]);
         $orders = Order::findAll(['user_id' => $userId]);
+
+        // Agar buyurtmalar mavjud bo'lmasa xabar ko'rsatish
+        if (empty($orders)) {
+            Yii::$app->session->setFlash('info', 'Siz hali buyurtma amalga oshirmagansiz.');
+            return $this->render('index', [
+                'profile' => $profile,
+                'groupedOrderItems' => [],
+                'products' => [],
+                'user' => $user,
+                'hasOrders' => false,
+                'commentModel' => new Comments(),  // Form uchun model
+            ]);
+        }
+
         $orderIds = array_column($orders, 'id');
         $orderItems = OrderItem::find()->where(['order_id' => $orderIds])->all();
+
         $products = [];
         $groupedOrderItems = [];
+
         foreach ($orderItems as $orderItem) {
             $products[$orderItem->product_id] = Product::findOne($orderItem->product_id);
             $groupedOrderItems[$orderItem->order_id][] = $orderItem;
@@ -52,7 +68,6 @@ class ProfileController extends Controller
                 Yii::$app->session->setFlash('error', 'Tasdiqlashda xatolik.');
             }
         }
-
 
         // Comment qo'shish yoki yangilash qismi
         if (Yii::$app->request->isPost) {
@@ -87,14 +102,14 @@ class ProfileController extends Controller
             }
         }
 
-
         return $this->render('index', [
             'profile' => $profile,
             'groupedOrderItems' => $groupedOrderItems,
             'products' => $products,
             'user' => $user,
-            'hasOrders' => !empty($orders),
+            'hasOrders' => true,
             'commentModel' => new Comments(),  // Form uchun model
         ]);
     }
+
 }

@@ -23,7 +23,6 @@ class CheckoutController extends Controller
         $productIds = [];
         $quantities = [];
 
-        // Parse selected items to extract product IDs and quantities
         foreach ($selectedProductData as $item) {
             list($productId, $quantity) = explode(':', $item);
             $productIds[] = (int)$productId;
@@ -32,13 +31,11 @@ class CheckoutController extends Controller
 
         $model = new OrderForm();
 
-        // Get user's last order for auto-filling form
         $lastOrder = Order::find()
             ->where(['user_id' => $userId])
             ->orderBy(['id' => SORT_DESC])
             ->one();
 
-        // Auto-fill form if a previous order exists
         if ($lastOrder) {
             $model->name = $lastOrder->name;
             $model->surname = $lastOrder->surname;
@@ -48,7 +45,6 @@ class CheckoutController extends Controller
             $model->payment_type = $lastOrder->payment_type;
         }
 
-        // Validate and save order form
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             $order = new Order();
             $order->user_id = $userId;
@@ -60,13 +56,11 @@ class CheckoutController extends Controller
             $order->payment_type = $model->payment_type;
 
             if ($order->save()) {
-                // Get selected basket items by product IDs
                 $basketItems = Basket::find()
                     ->where(['user_id' => $order->user_id, 'id' => $productIds])
                     ->all();
 
                 foreach ($basketItems as $item) {
-                    // Get the corresponding quantity for each item
                     $quantity = isset($quantities[$item->id]) ? $quantities[$item->id] : $item->quantity;
 
                     $orderItem = new OrderItem();
@@ -76,7 +70,6 @@ class CheckoutController extends Controller
                     $orderItem->price = $item->product->price;
 
                     if ($orderItem->save()) {
-                        // Reduce product stock
                         $product = Product::findOne($item->product_id);
                         if ($product) {
                             $product->count -= $quantity;
@@ -85,7 +78,6 @@ class CheckoutController extends Controller
                     }
                 }
 
-                // Order saved, redirect user
                 return $this->redirect(['free/index']);
             }
         }

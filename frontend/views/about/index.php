@@ -121,7 +121,7 @@ use yii\helpers\Url;
     </style>
 </head>
 <body>
-<div style="margin-top: 100px" class="product-detail-container">
+<div id="target-section" style="margin-top: 100px" class="product-detail-container">
     <div class="product-images">
         <!-- Main Image Display -->
         <div class="main-image-container">

@@ -46,13 +46,11 @@ class BasketController extends Controller
     public function actionIndex() {
         $userId = Yii::$app->user->id;
 
-        // Foydalanuvchining savatdagi mahsulotlarini olish
         $basketItems = Basket::find()
             ->where(['user_id' => $userId])
             ->with('product')
             ->all();
 
-        // Mahsulotning statusi yoki zaxirasiga qarab filtrni qo'llash
         $basketItems = array_filter($basketItems, function($item) {
             return $item->product !== null;
         });

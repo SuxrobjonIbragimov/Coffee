@@ -132,7 +132,7 @@ use yii\helpers\Url;
     </style>
 </head>
 <body>
-<div class="cart-container">
+<div class="cart-container" id="target-section">
     <h2 style="text-align: center">Your cart, <?= count($basketItems) ?> Product(s)</h2>
     <label class="select-all"><input type="checkbox" id="selectAll">&nbsp; Select all</label>
 
@@ -163,11 +163,12 @@ use yii\helpers\Url;
                 <button class="btn-quantity btn-decrement" <?= $disabled ? 'disabled' : '' ?>>-</button>
                 <input type="number" value="<?= Html::encode($item->quantity) ?>" min="1"
                        class="item-quantity" data-id="<?= Html::encode($item->id) ?>"
-                       data-stock="<?= Html::encode($item->product->count) ?>" <?= $disabled ? 'disabled' : '' ?>>
+                       data-stock="<?= Html::encode($item->product->count) ?>" <?= $disabled ? 'disabled' : '' ?> readonly>
                 <button class="btn-quantity btn-increment" <?= $disabled ? 'disabled' : '' ?>>+</button>
                 <a href="<?= Url::to(['basket/delete', 'id' => $item->id]) ?>" class="delete-link">Delete</a>
-                <input type="checkbox" class="select-item" value="<?= Html::encode($item->id) ?>" <?= $disabled ? 'disabled' : '' ?>> <!-- Removed checked attribute -->
+                <input type="checkbox" class="select-item" value="<?= Html::encode($item->id) ?>" <?= $disabled ? 'disabled' : '' ?>>
             </div>
+
         </div>
     <?php endforeach; ?>
 
@@ -206,6 +207,10 @@ use yii\helpers\Url;
 
         document.getElementById('grandTotal').innerText = grandTotal + ' $';
         document.getElementById('totalProducts').innerText = totalProducts;
+
+        // Enable or disable the formalization button based on selection
+        let formalizationButton = document.querySelector('.btn-formalization');
+        formalizationButton.disabled = totalProducts === 0;
     }
 
     // Handle increment and decrement buttons
@@ -276,6 +281,7 @@ use yii\helpers\Url;
         });
         calculateGrandTotal();
     });
+
 </script>
 
 
