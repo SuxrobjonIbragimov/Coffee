@@ -1,5 +1,7 @@
 <?php
 
+use frontend\models\Basket;
+use frontend\models\Comments;
 use frontend\models\Product;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -7,19 +9,65 @@ use yii\helpers\Url;
 \frontend\assets\CoffeeAsset::register($this);
 /* @var $this yii\web\View */
 /* @var $products \frontend\models\Product[] */
+//$basketItems = Basket::find()->where(['user_id' => $userId])->with('product')->all();
 
-$products = Product::find()->with('images', 'categories')->all();
+$products = Product::find()
+    ->with('images', 'categories')
+    ->where(['type' => 1])
+    ->andWhere(['!=', 'status', 0])
+    ->andWhere(['>', 'count', 0])
+    ->all();
+
+$specialtyProducts = Product::find()
+    ->with('images', 'categories')
+    ->where(['type' => 0])
+    ->andWhere(['!=', 'status', 0])
+    ->andWhere(['>', 'count', 0])
+    ->all();
+
+$premiumProducts = Product::find()
+    ->with('images')
+    ->where(['type' => 2])
+    ->andWhere(['!=', 'status', 0])
+    ->andWhere(['>', 'count', 0])
+    ->all();
+
+$blogProducts = Product::find()
+    ->with('images')
+    ->where(['type' => 3])
+    ->andWhere(['!=', 'status', 0])
+    ->andWhere(['>', 'count', 0])
+    ->all();
+
+
+$viewedCounts = (new \yii\db\Query())
+    ->select(['product_id', 'COUNT(*) AS count'])
+    ->from('viewed')
+    ->where(['product_id' => array_column($blogProducts, 'id')])
+    ->groupBy('product_id')
+    ->indexBy('product_id') // Index by product_id for easier access
+    ->all();
+
 
 $groupedProducts = [];
 foreach ($products as $product) {
-    $categoryName = $product->categories ? $product->categories->cname_uz : 'Uncategorized';
+    $categoryName = $product->categories ? $product->categories->name : 'Uncategorized';
     $groupedProducts[$categoryName][] = $product;
 }
+
+$currentLang = Yii::$app->session->get('lang', 'uz');
+
+$commentsCount = Comments::find()->count();
+$productsCount = Product::find()->count();
+$viewedCount = \frontend\models\Vieweds::find()->count();
+
+
+
 ?>
 
 <?php $this->beginPage() ?>
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="<?= $currentLang ?>">
 
     <head>
         <meta charset="UTF-8">
@@ -45,6 +93,14 @@ foreach ($products as $product) {
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
         <title>Coffee</title>
+        <style>
+            /* Ensure products are not hidden by default */
+            .hidden {
+                display: none;
+            }
+
+
+        </style>
     </head>
 
     <body>
@@ -56,29 +112,62 @@ foreach ($products as $product) {
     <!--==================== HEADER ====================-->
     <header class="header" id="header">
         <nav class="nav container">
-            <a href="" class="nav__logo">
+            <a href="http://localhost:8881/" class="nav__logo">
                 <img src="<?= Yii::getAlias('@web/coffee/img/logo.png')?>" alt="Logo" class="nav__logo-img">
-                Coffee.
+                Coffee
             </a>
-            <div class="nav__menu" id="nav-menu">
+
+            <div style="margin-left: 250px; margin-top: 12px" class="nav__menu" id="nav-menu">
                 <ul class="nav__list">
                     <li class="nav__item">
-                        <a href="#home" class="nav__link active-link">Home</a>
+                        <a href="#home" class="nav__link active-link"><?=Yii::t('app','Home')?></a>
                     </li>
                     <li class="nav__item">
-                        <a href="#products" class="nav__link">Products</a>
+                        <a href="#products" class="nav__link"><?=Yii::t('app','Products')?></a>
                     </li>
                     <li class="nav__item">
-                        <a href="#premium" class="nav__link">Premium</a>
+                        <a href="#premium" class="nav__link"><?=Yii::t('app','Premium')?></a>
                     </li>
                     <li class="nav__item">
-                        <a href="#blog" class="nav__link">Blog</a>
+                        <a href="#blog" class="nav__link"><?=Yii::t('app','Blog')?></a>
                     </li>
                     <?php if (Yii::$app->user->isGuest): ?>
-                        <a style="color: white" href="<?= Url::to(['/site/signup']) ?>"><i style="font-size: 23px" class="fa-solid fa-user"></i></a>
-                    <?php else: ?>
-                        <a href="<?= Url::to(['/profile/profile']) ?>"><i style="font-size: 23px" class="fa-solid fa-user"></i></a>
+                        <a style="color: var(--text-color)" href="<?= Url::to(['/site/login']) ?>">
+                            <i style="font-size: 23px" class="fa-solid fa-user"></i>
+                        </a>
+                        <?php else: ?>
+                        <a style="color: var(--text-color)" href="<?= Url::to(['/profile/index']) ?>">
+                            <i style="font-size: 23px" class="fa-solid fa-user"></i>
+                        </a>
+                        <?= Html::beginForm(['/site/logout'], 'post') ?>
+                        <button type="submit" style="background:none;border:none;color: var(--text-color);">
+                            <i style="font-size: 23px" class="fa-solid fa-sign-out"></i>
+                        </button>
+                        <?= Html::endForm() ?>
                     <?php endif; ?>
+                        <a href="<?= Url::to(['basket/index']) ?>">
+                            <i style="color: var(--text-color); font-size: 25px" class="fa-solid fa-bag-shopping">&nbsp;
+<!--                                --><?php //= count($basketItems) ?>
+                            </i>
+                        </a>&nbsp;
+                    <div class="lang">
+                        <form action="/site/changelang" method="get" id="form-uz">
+                            <input type="hidden" name="lang" value="uz">
+                        </form>
+                        <form action="/site/changelang" method="get" id="form-en">
+                            <input type="hidden" name="lang" value="en">
+                        </form>
+                        <form action="/site/changelang" method="get" id="form-ru">
+                            <input type="hidden" name="lang" value="ru">
+                        </form>
+                        <select style="width: 100px; border-radius: 15px; height: 2rem; text-align: center" class="rounded-pill py-2 px-4 ms-5 d-none d-lg-block form-select" onchange="document.getElementById('form-' + this.value).submit();">
+                            <option value="uz" <?= $currentLang == 'uz' ? 'selected' : '' ?>> 🇺🇿 Uz</option>
+                            <option value="en" <?= $currentLang == 'en' ? 'selected' : '' ?>> 🇬🇧 En</option>
+                            <option value="ru" <?= $currentLang == 'ru' ? 'selected' : '' ?>> 🇷🇺 Ru</option>
+                        </select>
+                    </div>
+
+
                 </ul>
                 <div class="nav__close" id="nav-close">
                     <i class="bx bx-x"></i>
@@ -98,26 +187,27 @@ foreach ($products as $product) {
             <div class="home__container">
                 <div class="home__content container">
                     <h1 class="home__title">
-                        Choose Your Favorite Coffee And Enjoy<span>.</span>
+                       <?=Yii::t('app','Choose Your Favorite Coffee And Enjoy')?> <span></span>
                     </h1>
                     <p class="home__description">
-                        Buy the best and delicious coffees.
+                        <?=Yii::t('app','Buy the best and delicious coffees.')?>
                     </p>
 
                     <div class="home__data">
                         <div class="home__data-group">
-                            <h2 class="home__data-number">120K</h2>
-                            <h3 class="home__data-title">Testimonials</h3>
+                            <h2 class="home__data-number"><?= Yii::$app->formatter->asDecimal($commentsCount) ?> </h2>
+                            <h3 class="home__data-title"><?=Yii::t('app','Testimonials')?></h3>
                             <p class="home__data-description">
-                                Testimonials from various customers who trust us.
+                                <?=Yii::t('app','Testimonials from various customers who trust us.')?>
                             </p>
                         </div>
 
+
                         <div class="home__data-group">
-                            <h2 class="home__data-number">340+</h2>
-                            <h3 class="home__data-title">Exclusive Product</h3>
+                            <h2 class="home__data-number"><?= Yii::$app->formatter->asDecimal($productsCount) ?> </h2>
+                            <h3 class="home__data-title"><?=Yii::t('app','Exclusive Product')?></h3>
                             <p class="home__data-description">
-                                Premium preparation with quality ingredients.
+                                <?=Yii::t('app','Premium preparation with quality ingredients.')?>
                             </p>
                         </div>
                     </div>
@@ -133,45 +223,33 @@ foreach ($products as $product) {
         </section>
       <?= $content?>
         <!--==================== ESPECIALTY ====================-->
+
         <div class="specialty section container" id="specialty">
             <div class="specialty__container">
                 <div class="specialty__box">
                     <h2 class="section__title">
-                        Specialty coffees that make you happy and cheer you up!
+                        <?= Yii::t('app', 'Specialty coffees that make you happy and cheer you up!') ?>
                     </h2>
 
                     <div class="">
-                        <a href="#!" class="button specialty__button">See more</a>
+                        <a href="#!" class="button specialty__button" id="seeMoreButton"><?= Yii::t('app', 'See more') ?></a>
                     </div>
                 </div>
 
-                <div class="specialty__category">
-                    <div class="specialty__group specialty__line">
-                        <img src="<?= Yii::getAlias('@web/coffee/img/specialty1.png')?>" alt="Specialty img" class="specialty__img">
-
-                        <h3 class="specialty__title">Selected Coffee</h3>
-                        <p class="specialty__description">
-                            We select the best premium coffee, for a true taste.
-                        </p>
-                    </div>
-
-                    <div class="specialty__group specialty__line">
-                        <img src="<?= Yii::getAlias('@web/coffee/img/specialty2.png')?>" alt="Specialty img" class="specialty__img">
-
-                        <h3 class="specialty__title">Delicious Cookies</h3>
-                        <p class="specialty__description">
-                            Enjoy your coffee with some hot cookies
-                        </p>
-                    </div>
-
-                    <div class="specialty__group">
-                        <img src="<?= Yii::getAlias('@web/coffee/img/specialty3.png')?>" alt="Specialty img" class="specialty__img">
-
-                        <h3 class="specialty__title">Enjoy at Home</h3>
-                        <p class="specialty__description">
-                            Enjoy the best coffee in the comfort of your home.
-                        </p>
-                    </div>
+                <div class="specialty__category" id="specialtyCategory">
+                    <?php foreach ($specialtyProducts as $index => $product): ?>
+                        <div class="specialty__group specialty__line <?= $index >= 3 ? 'hidden' : '' ?>">
+                            <a href="<?= Url::to(['/about/index', 'id' => $product->id]) ?>" class="quality__button">
+                                <?php if (!empty($product->images)): ?>
+                                    <img src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" alt="<?= Html::encode($product->{'name_' . $currentLang}) ?>" class="specialty__img">
+                                <?php endif; ?>
+                            </a>
+                            <h3 class="specialty__title"><?= Html::encode($product->{'name_' . $currentLang}) ?></h3>
+                            <p class="specialty__description">
+                                <?= Html::encode($product->{'description_' . $currentLang}) ?>
+                            </p>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
@@ -180,7 +258,7 @@ foreach ($products as $product) {
         <section class="products section" id="products">
             <div class="products__container container">
                 <h2 class="section__title">
-                    Choose our delicious and best products
+                    <?=Yii::t('app','Choose our delicious and best products')?>
                 </h2>
 
                 <div class="products__filter-container">
@@ -188,12 +266,11 @@ foreach ($products as $product) {
                         <?php
                         $i = 0;
                         foreach ($groupedProducts as $categoryName => $productsInCategory):
-                            // Show first 3 categories by default, hide the rest
                             $hiddenClass = ($i >= 3) ? 'hidden-category' : '';
                             ?>
                             <li class="products__item products__line <?= $hiddenClass ?>" data-filter=".<?= strtolower(Html::encode($categoryName)) ?>">
                                 <h3 class="products__title"><?= Html::encode($categoryName) ?></h3>
-                                <span class="products__stock"><?= count($productsInCategory) ?> products</span>
+                                <span class="products__stock"><?= count($productsInCategory) ?> <?=Yii::t('app','products')?></span>
                             </li>
                             <?php
                             $i++;
@@ -214,16 +291,18 @@ foreach ($products as $product) {
                             <article class="products__card <?= strtolower(Html::encode($categoryName)) ?>">
                                 <div class="products__shape">
                                     <?php if (!empty($product->images)): ?>
-                                        <img style="height: 13rem" src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" class="products__img" alt="<?= Html::encode($product->name_uz) ?>">
+                                        <a href="<?= Url::to(['/about/index', 'id' => $product->id]) ?>">
+                                            <img style="height: 13rem" src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" class="products__img" alt="<?= Html::encode($product->name) ?>">
+                                        </a>
                                     <?php endif; ?>
                                 </div>
 
                                 <div class="products__data">
                                     <h2 class="products__price">$<?= Html::encode($product->price) ?></h2>
-                                    <h3 class="products__name"><?= Html::encode($product->name_uz) ?></h3>
+                                    <h3 class="products__name"><?= Html::encode($product->name) ?></h3>
 
-                                    <button class="button products__button">
-                                        <i class="bx bx-shopping-bag"></i>
+                                    <button class="button products__button add-to-basket" data-product-id="<?= $product->id ?>">
+                                        <i style="color: white" class="bx bx-shopping-bag"></i>
                                     </button>
                                 </div>
                             </article>
@@ -236,36 +315,44 @@ foreach ($products as $product) {
         <section class="quality section" id="premium">
             <div class="quality__container container">
                 <h2 class="section__title">
-                    We offer a premium and better quality preparation just for you!
+                    <?= Yii::t('app', 'We offer a premium and better quality preparation just for you!') ?>
                 </h2>
 
                 <div class="quality__content grid">
-                    <div class="quality__images">
-                        <img src="<?= Yii::getAlias('@web/coffee/img/quality1.png')?>" alt="Quality" class="quality__img-big">
-                        <img src="<?= Yii::getAlias('@web/coffee/img/quality2.png')?>" alt="Quality" class="quality__img-small">
-                    </div>
-
-                    <div class="quality__data">
-                        <h1 class="quality__title">Premium Coffee</h1>
-                        <h2 class="quality__price">$94.99</h2>
-                        <span class="quality__special">Especial Price</span>
-                        <p class="quality__description">
-                            We are delighted with our coffee. That's why you get the best
-                            premium coffee plus the kettle made of resistant materials that
-                            you see in the image, for a special price.
-                        </p>
-
-                        <div class="quality__buttons">
-                            <button class="button">
-                                Buy Now
-                            </button>
-
-                            <a href="#!" class="quality__button">
-                                See more
-                                <i class="bx bx-right-arrow-alt"></i>
+                    <?php foreach ($premiumProducts as $index => $product): ?>
+                        <div class="quality__images" data-index="<?= $index ?>" style="<?= $index > 0 ? 'display:none;' : '' ?>">
+                            <a href="<?= Url::to(['/about/index', 'id' => $product->id]) ?>">
+                                <?php if (!empty($product->images)): ?>
+                                    <img src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" alt="<?= Html::encode($product->name) ?>" class="quality__img-big">
+                                    <img src="<?= Yii::getAlias('@web/coffee/img/quality2.png') ?>" alt="<?= Html::encode($product->name) ?>" class="quality__img-small">
+                                <?php endif; ?>
                             </a>
                         </div>
-                    </div>
+
+                        <div class="quality__data" data-index="<?= $index ?>" style="<?= $index > 0 ? 'display:none;' : '' ?>">
+                            <h1 class="quality__title"><?= Html::encode($product->name) ?></h1>
+                            <h2 class="quality__price">$<?= Html::encode($product->price) ?></h2>
+                            <span class="quality__special">Special Price</span>
+                            <p class="quality__description">
+                                <?= Html::encode($product->{'description_' . $currentLang}) ?>
+                            </p>
+
+                            <div class="quality__buttons">
+                                <a>
+                                    <button class="button add-to-basket" data-product-id="<?= $product->id ?>">
+                                        <?= Yii::t('app', 'Buy Now') ?>
+                                    </button>
+                                </a>
+
+                                <?php if ($index === 0): ?>
+                                    <a class="quality__button" id="see-more">
+                                        <?= Yii::t('app', 'See more') ?>
+                                        <i class="bx bx-right-arrow-alt"></i>
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </section>
@@ -285,77 +372,51 @@ foreach ($products as $product) {
         <section class="blog section" id="blog">
             <div class="blog__container container">
                 <h2 class="section__title">
-                    Our Blogs Coffee with trending topic for this week
+                    <?=Yii::t('app','Our Blogs Coffee with trending topic for this week')?>
                 </h2>
 
                 <div class="blog__content grid">
-                    <article class="blog__card">
-                        <div class="blog__image">
-                            <img src="<?= Yii::getAlias('@web/coffee/img/blog1.png')?>" alt="BLog" class="blog__img">
-                            <a href="#!" class="blog__button">
-                                <i class="bx bx-right-arrow-alt"></i>
-                            </a>
-                        </div>
+                    <?php foreach ($blogProducts as $product): ?>
+                        <article class="blog__card">
+                            <div class="blog__image">
+                                <?php if (!empty($product->images)): ?>
+                                    <img src="<?= Yii::getAlias('@web/uploads/' . $product->images[0]->image_file_name) ?>" alt="<?= Html::encode($product->name) ?>" class="blog__img">
+                                <?php endif; ?>
+                                <a href="<?= Url::to(['/about/index', 'id' => $product->id]) ?>" class="blog__button">
+                                    <i class="bx bx-right-arrow-alt"></i>
+                                </a>
+                            </div>
 
-                        <div class="blog__data">
-                            <h2 class="blog__title">
-                                10 Coffee Recommendations
-                            </h2>
-                            <p class="blog__description">
-                                10 Coffee Recommendations
-                                The blogs about coffee will help you a lot about
-                                how it is prepared, its waiting time, for a good
-                                quality coffee.
-                            </p>
+                            <div class="blog__data">
+                                <h2 class="blog__title">
+                                    <?= Html::encode($product->name) ?>
+                                </h2>
+                                <p class="blog__description">
+                                    <?= Html::encode($product->{'description_' . $currentLang}) ?>
+                                </p>
 
-                            <div class="blog__footer">
-                                <div class="blog__reaction">
-                                    <i class="bx bx-comment"></i>
-                                    <span>45</span>
-                                </div>
+                                <div class="blog__footer">
+                                    <div class="blog__reaction">
+                                        <i class="bx bx-comment"></i>
+                                        <span>
+                                    <?= Yii::$app->formatter->asDecimal($commentsCount) ?>
+                                </span>
+                                    </div>
 
-                                <div class="blog__reaction">
-                                    <i class="bx bx-show"></i>
-                                    <span>76,5K</span>
+                                    <div class="blog__reaction">
+                                        <i class="bx bx-show"></i>
+                                        <span>
+                                    <?= isset($viewedCounts[$product->id]) ? $viewedCounts[$product->id]['count'] : 0 ?>
+                                </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </article>
-
-                    <article class="blog__card">
-                        <div class="blog__image">
-                            <img src="<?= Yii::getAlias('@web/coffee/img/blog2.png')?>" alt="BLog" class="blog__img">
-                            <a href="#!" class="blog__button">
-                                <i class="bx bx-right-arrow-alt"></i>
-                            </a>
-                        </div>
-
-                        <div class="blog__data">
-                            <h2 class="blog__title">
-                                12 Benefits Of Drinking Coffee
-                            </h2>
-                            <p class="blog__description">
-                                The blogs about coffee will help you a lot about
-                                how it is prepared, its waiting time, for a good
-                                quality coffee.
-                            </p>
-
-                            <div class="blog__footer">
-                                <div class="blog__reaction">
-                                    <i class="bx bx-comment"></i>
-                                    <span>77</span>
-                                </div>
-
-                                <div class="blog__reaction">
-                                    <i class="bx bx-show"></i>
-                                    <span>234,7K</span>
-                                </div>
-                            </div>
-                        </div>
-                    </article>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </section>
+
     </main>
 
     <!--==================== FOOTER ====================-->
@@ -426,7 +487,80 @@ foreach ($products as $product) {
     <a href="#" class="scrollup" id="scroll-up">
         <i class="bx bx-up-arrow-alt"></i>
     </a>
+    <script>
+            document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.add-to-basket');
 
+            buttons.forEach(button => {
+            button.addEventListener('click', function (event) {
+            event.preventDefault(); // Standart button amalini to‘xtatish
+
+            const productId = this.getAttribute('data-product-id');
+
+            fetch(`<?= Url::to(['basket/add']) ?>?id=${productId}`, {
+            method: 'POST',
+            headers: {
+            'X-Requested-With': 'XMLHttpRequest', // So‘rovni AJAX sifatida aniqlash uchun
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': '<?= Yii::$app->request->getCsrfToken() ?>', // CSRF tokenini qo‘shish
+        },
+        })
+            .then(response => response.json())
+            .then(data => {
+            if (data.status === 'success') {
+            alert('Mahsulot savatga qo\'shildi'); // Muvoffaqiyatli qo‘shildi xabari
+        } else {
+            alert('Savatga qo‘shishda xatolik yuz berdi'); // Xatolik haqida xabar
+        }
+        })
+            .catch(error => {
+            alert('Xatolik yuz berdi'); // Umumiy xatolik xabari
+            console.error('Xatolik:', error);
+        });
+        });
+        });
+        });
+
+    </script>
+
+    <?php
+    $script = <<<JS
+var isExpanded = false;
+
+document.getElementById('seeMoreButton').addEventListener('click', function() {
+    var hiddenItems = document.querySelectorAll('.specialty__category .specialty__group');
+
+    if (isExpanded) {
+        hiddenItems.forEach(function(item, index) {
+            if (index >= 3) { // Hide all but the first 3 items
+                item.classList.add('hidden');
+            }
+        });
+        this.textContent = 'See more';
+    } else {
+        hiddenItems.forEach(function(item, index) {
+            if (index >= 3) { // Show 3 more items
+                item.classList.remove('hidden');
+            }
+        });
+        // this.textContent = 'Show less';
+    }
+
+    isExpanded = !isExpanded;
+});
+JS;
+    $this->registerJs($script);
+    ?>
+
+<script>
+    document.getElementById('see-more').addEventListener('click', function () {
+        document.querySelectorAll('[data-index]').forEach(function (element) {
+            element.style.display = 'block';
+        });
+        this.style.display = 'none';
+    });
+
+</script>
     <?php $this->endBody() ?>
     </body>
     </html>

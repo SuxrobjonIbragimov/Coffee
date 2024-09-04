@@ -5,7 +5,9 @@ namespace backend\controllers;
 use app\models\ProductImages;
 use app\models\Products;
 use app\models\ProductsSearch;
+use app\models\Specifications;
 use Yii;
+use yii\filters\AccessControl;
 use yii\helpers\Url;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -17,22 +19,31 @@ use yii\web\UploadedFile;
  */
 class ProductsController extends Controller
 {
+
+
     /**
      * @inheritDoc
      */
     public function behaviors()
     {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['superAdmin'],
+                        'permissions' =>['Products']
                     ],
                 ],
-            ]
-        );
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -73,30 +84,58 @@ class ProductsController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
+
     public function actionCreate()
     {
         $model = new Products();
         $initialPreview = [];
         $initialPreviewConfig = [];
 
-        $productImages = $model->isNewRecord ? [] : ProductImages::find()->where(['product_id' => $model->id])->all();
+        if (Yii::$app->request->isPost) {
+            $postData = Yii::$app->request->post();
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post())) {
+            if ($model->load($postData) && $model->save()) {
+                // Rasm fayllarini yuklash
                 $model->imageFiles = UploadedFile::getInstances($model, 'imageFiles');
+                $savedFiles = $model->upload();
 
-                if ($model->save()) {
-                    $savedImages = $model->upload();
-                    if ($savedImages !== false) {
-                        foreach ($savedImages as $imageName) {
-                            $productImage = new ProductImages();
-                            $productImage->product_id = $model->id;
-                            $productImage->image_file_name = $imageName;
-                            $productImage->save();
+                if ($savedFiles) {
+                    foreach ($savedFiles as $fileName) {
+                        $image = new ProductImages();
+                        $image->product_id = $model->id; // product_id emas, id bo'lishi kerak
+                        $image->image_file_name = $fileName;
+                        if (!$image->save(false)) {
+                            Yii::error($image->errors);
                         }
                     }
-                    return $this->redirect(['view', 'id' => $model->id]);
+                } else {
+                    Yii::error($model->errors);
                 }
+
+                // Spesifikatsiyalarni saqlash
+                $specifications = $postData['Products']['specifications'] ?? [];
+                foreach ($specifications as $specificationData) {
+                    $specification = new Specifications();
+                    $specification->product_id = $model->id; // product_id emas, id bo'lishi kerak
+                    $specification->key_uz = $specificationData['key_uz'] ?? '';
+                    $specification->key_ru = $specificationData['key_ru'] ?? '';
+                    $specification->key_en = $specificationData['key_en'] ?? '';
+                    $specification->value_uz = $specificationData['value_uz'] ?? '';
+                    $specification->value_ru = $specificationData['value_ru'] ?? '';
+                    $specification->value_en = $specificationData['value_en'] ?? '';
+
+                    // Agar har qanday til uchun kalit (key) bo'sh bo'lmasa, spesifikatsiya saqlanadi
+                    if (!empty($specification->key_uz) || !empty($specification->key_ru) || !empty($specification->key_en)) {
+                        if (!$specification->save()) {
+                            Yii::error($specification->errors);
+                        }
+                    }
+                }
+
+                // Yaratilgan mahsulotning ko'rish sahifasiga qayta yo'naltirish
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else {
+                Yii::error($model->errors);
             }
         } else {
             $model->loadDefaultValues();
@@ -108,6 +147,7 @@ class ProductsController extends Controller
             'initialPreviewConfig' => $initialPreviewConfig,
         ]);
     }
+
 
     public function actionUpdate($id)
     {
@@ -125,19 +165,24 @@ class ProductsController extends Controller
             ];
         }
 
+        // Load existing specifications
+        $existingSpecifications = Specifications::findAll(['product_id' => $id]);
+        $specifications = [];
+        foreach ($existingSpecifications as $spec) {
+            $specifications[] = $spec;
+        }
+        $model->specifications = $specifications;
+
         if (Yii::$app->request->isPost) {
             $postData = Yii::$app->request->post();
 
             if ($model->load($postData) && $model->save()) {
+                // Handle image updates
                 $images = UploadedFile::getInstances($model, 'imageFiles');
-
                 if (!empty($images)) {
-                    // Unassociate old images from the product without deleting the files
                     foreach ($productImages as $image) {
-                        $image->delete(); // Only delete the record from the database, not the file
+                        $image->delete();
                     }
-
-                    // Save new images
                     foreach ($images as $image) {
                         $filePath = Yii::getAlias('@frontend/web/uploads/') . $image->baseName . '.' . $image->extension;
                         if ($image->saveAs($filePath)) {
@@ -149,6 +194,26 @@ class ProductsController extends Controller
                             }
                         } else {
                             Yii::$app->session->setFlash('error', 'Failed to upload new image.');
+                        }
+                    }
+                }
+
+                // Handle specifications updates
+                $specificationData = $postData['Products']['specifications'] ?? [];
+                foreach ($specificationData as $index => $specData) {
+                    $specification = isset($specifications[$index]) ? $specifications[$index] : new Specifications();
+                    $specification->product_id = $model->id;
+                    $specification->key_uz = $specData['key_uz'] ?? '';
+                    $specification->key_ru = $specData['key_ru'] ?? '';
+                    $specification->key_en = $specData['key_en'] ?? '';
+                    $specification->value_uz = $specData['value_uz'] ?? '';
+                    $specification->value_ru = $specData['value_ru'] ?? '';
+                    $specification->value_en = $specData['value_en'] ?? '';
+
+                    // Only save if there's a key in any language
+                    if (!empty($specification->key_uz) || !empty($specification->key_ru) || !empty($specification->key_en)) {
+                        if (!$specification->save()) {
+                            Yii::error($specification->errors);
                         }
                     }
                 }

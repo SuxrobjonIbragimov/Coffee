@@ -24,6 +24,8 @@ AppAsset::register($this);
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 </head>
 <body class="d-flex flex-column h-100">
 <?php $this->beginBody() ?>
@@ -33,22 +35,46 @@ AppAsset::register($this);
     NavBar::begin([
         'brandLabel' => Yii::$app->name,
         'brandUrl' => Yii::$app->homeUrl,
-        'options' => [
-            'class' => 'navbar navbar-expand-md navbar-dark bg-dark fixed-top justify-content-center'
-        ]
+        'options' => ['class' => 'navbar-expand-md navbar-dark bg-dark fixed-top justify-content-center']
     ]);
 
     $menuItems = [
-        ['label' => Html::tag('i', '', ['class'=>'fa fa-users']) . ' Users', 'url' => ['/users/index']],
-        ['label' => Html::tag('i', '', ['class'=>'fa fa-box']) . ' Products', 'url' => ['/products/index']],
-        ['label' => Html::tag('i', '', ['class'=>'fa fa-list']) . ' Categories', 'url' => ['/categories/index']],
-        ['label' => Html::tag('i', '', ['class'=>'fa fa-images']) . ' P/I', 'url' => ['/product_images/index']],
-        ['label' => Html::tag('i', '', ['class'=>'fa fa-shopping-cart']) . ' Orders', 'url' => ['/orders/index']],
-        ['label' => Html::tag('i', '', ['class'=>'fa fa-receipt']) . ' OrderDetails', 'url' => ['/order_details/index']],
+        // Admin Roles
+        ['label' => Html::tag('i', '', ['class' => 'fa fa-user-tie']) . ' Admin Roles',
+            'url' => ['/admin_roles/index'],
+            'visible' => Yii::$app->user->can('Admin_roles')],
+
+        // Users
+        ['label' => Html::tag('i', '', ['class' => 'fa fa-users']) . ' Users',
+            'url' => ['/users/index'],
+            'visible' => Yii::$app->user->can('Users')],
+
+        // Products
+        ['label' => Html::tag('i', '', ['class' => 'fa fa-box']) . ' Products',
+            'url' => ['/products/index'],
+            'visible' => Yii::$app->user->can('Products')],
+
+        // Categories
+        ['label' => Html::tag('i', '', ['class' => 'fa fa-list']) . ' Categories',
+            'url' => ['/categories/index'],
+            'visible' => Yii::$app->user->can('Categories')],
+
+        // Orders
+        ['label' => Html::tag('i', '', ['class' => 'fa fa-shopping-cart']) . ' Orders',
+            'url' => ['/orders/index'],
+            'visible' => Yii::$app->user->can('Orders')],
+
+        // Specifications
+        ['label' => Html::tag('i', '', ['class' => 'fa fa-box']) . ' Specifications',
+            'url' => ['/specifications/index'], 'visible' => Yii::$app->user->can('viewSpecifications')],
+
+        // Comments
+        ['label' => Html::tag('i', '', ['class' => 'fa fa-comment']) . ' Comment',
+            'url' => ['/comment/index'], 'visible' => Yii::$app->user->can('viewComments')],
     ];
 
     echo Nav::widget([
-        'options' => ['class' => 'navbar-nav me-auto mb-2 mb-md-0'],
+        'options' => ['class' => 'navbar-nav me-auto'],
         'items' => $menuItems,
         'encodeLabels' => false,
     ]);

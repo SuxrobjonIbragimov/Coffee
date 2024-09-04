@@ -7,9 +7,9 @@ use yii\data\ActiveDataProvider;
 use app\models\OrderDetails;
 
 /**
- * Order_detailsSearch represents the model behind the search form of `app\models\OrderDetails`.
+ * OrderDetailsSearch represents the model behind the search form of `app\models\OrderDetails`.
  */
-class Order_detailsSearch extends OrderDetails
+class OrderDetailsSearch extends OrderDetails
 {
     /**
      * {@inheritdoc}

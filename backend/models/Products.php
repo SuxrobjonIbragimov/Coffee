@@ -21,6 +21,8 @@ use yii\helpers\FileHelper;
 class Products extends \yii\db\ActiveRecord
 {
     public $imageFiles;
+    public $specifications = [];
+
     const LANGUAGES = ['uz', 'ru', 'en'];
 
     /**
@@ -37,17 +39,19 @@ class Products extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name_uz', 'name_en', 'name_ru', 'price','status', 'category_id'], 'required'],
-            [['discount_price','status','price'], 'number'],
+            [['name_uz', 'name_en', 'name_ru', 'price', 'status', 'category_id', 'type'], 'required'],
+            [['discount_price', 'status', 'price'], 'number'],
             [['category_id'], 'default', 'value' => null],
             [['status'], 'in', 'range' => [0, 1]],
+            [['type'], 'in', 'range' => [0, 1, 2, 3]],
             [['category_id'], 'integer'],
-            [['name_uz', 'name_en', 'name_ru'], 'string', 'max' => 255],
+            [['name_uz', 'name_en', 'name_ru','description_uz','description_en','description_ru'], 'string', 'max' => 255],
             [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => Categories::class, 'targetAttribute' => ['category_id' => 'id']],
             [['imageFiles'], 'file', 'skipOnEmpty' => true, 'extensions' => 'png, jpg', 'maxFiles' => 10],
-
+            [['specifications'], 'safe'],
         ];
     }
+
 
     public function upload()
     {
@@ -68,6 +72,7 @@ class Products extends \yii\db\ActiveRecord
         }
         return false;
     }
+
     /**
      * Gets query for [[Category]].
      *
@@ -77,7 +82,6 @@ class Products extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Categories::class, ['id' => 'category_id']);
     }
-
 
     /**
      * Gets query for [[OrderDetails]].
@@ -98,10 +102,10 @@ class Products extends \yii\db\ActiveRecord
     {
         return $this->hasMany(ProductImages::class, ['product_id' => 'id']);
     }
+
     public function getImages()
     {
         return $this->hasMany(ProductImages::className(), ['product_id' => 'id']);
     }
-
-
 }
+

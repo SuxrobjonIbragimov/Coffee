@@ -22,22 +22,28 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
+                'only' => ['index', 'view', 'create', 'update', 'delete', 'login'],
                 'rules' => [
                     [
-                        'actions' => ['login', 'error'],
                         'allow' => true,
+                        'actions' => ['login'],
+                        'roles' => ['?'],
                     ],
                     [
-                        'actions' => ['logout', 'index'],
                         'allow' => true,
-                        'roles' => ['@'],
+                        'actions' => ['index'],
+                        'roles' => ['superAdmin','admin','moderator'],
                     ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::class,
-                'actions' => [
-                    'logout' => ['post'],
+                    [
+                        'allow' => true,
+                        'actions' => ['view', 'update', 'delete'],
+                        'roles' => ['superAdmin', 'admin', 'moderator'],
+                        'matchCallback' => function ($rule, $action) {
+
+                            return Yii::$app->user->can($action->controller->id . ucfirst($action->id));
+
+                        }
+                    ],
                 ],
             ],
         ];

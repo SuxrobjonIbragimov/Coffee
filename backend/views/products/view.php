@@ -36,7 +36,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'name_ru',
             'name_en',
             'price',
-            'discount_price',
+//            'discount_price',
             [
                 'attribute' => 'status',
                 'value' => function($model) {
@@ -49,6 +49,13 @@ $this->params['breadcrumbs'][] = $this->title;
                     return $model->category->cname_uz;
                 },
                 'label' => 'Category Name',
+            ],
+            [
+                'attribute' => 'type',
+                'value' => function($model) {
+                    $types = [0 => 'Specialty', 1 => 'Usual', 2 => 'Premium'];
+                    return isset($types[$model->type]) ? $types[$model->type] : 'N/A';
+                },
             ],
         ],
     ]) ?>

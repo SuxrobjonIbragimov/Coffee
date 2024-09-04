@@ -2,17 +2,23 @@
 
 namespace app\models;
 
+use common\models\User;
 use Yii;
 
 /**
  * This is the model class for table "orders".
  *
  * @property int $id
- * @property string $customer_name
- * @property string $customer_email
- * @property float $total_price
+ * @property string $name
+ * @property string $surname
+ * @property string $phone
+ * @property string $address
+ * @property string $delivery_type
+ * @property string $payment_type
+ * @property int $user_id
  *
  * @property OrderDetails[] $orderDetails
+ * @property User $user
  */
 class Orders extends \yii\db\ActiveRecord
 {
@@ -30,24 +36,19 @@ class Orders extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['customer_name', 'customer_email', 'total_price'], 'required'],
-            [['total_price'], 'number'],
-            [['customer_name', 'customer_email'], 'string', 'max' => 255],
+            [['name', 'surname', 'phone', 'address', 'delivery_type', 'payment_type', 'user_id'], 'required'],
+            [['user_id'], 'default', 'value' => null],
+            [['user_id'], 'integer'],
+            [['name', 'surname', 'address', 'delivery_type', 'payment_type'], 'string', 'max' => 255],
+            [['phone'], 'string', 'max' => 14],
+            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
-    {
-        return [
-            'id' => Yii::t('app', 'ID'),
-            'customer_name' => Yii::t('app', 'Customer Name'),
-            'customer_email' => Yii::t('app', 'Customer Email'),
-            'total_price' => Yii::t('app', 'Total Price'),
-        ];
-    }
+
 
     /**
      * Gets query for [[OrderDetails]].
@@ -58,4 +59,16 @@ class Orders extends \yii\db\ActiveRecord
     {
         return $this->hasMany(OrderDetails::class, ['order_id' => 'id']);
     }
+
+    /**
+     * Gets query for [[User]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getUser()
+    {
+        return $this->hasOne(User::class, ['id' => 'user_id']);
+    }
+
+
 }

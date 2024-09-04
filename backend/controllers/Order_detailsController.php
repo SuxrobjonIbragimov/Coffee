@@ -3,7 +3,8 @@
 namespace backend\controllers;
 
 use app\models\OrderDetails;
-use app\models\Order_detailsSearch;
+use app\models\OrderDetailsSearch;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -18,17 +19,24 @@ class Order_detailsController extends Controller
      */
     public function behaviors()
     {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['superAdmin'],
+                        'permissions' =>['Order_details']
                     ],
                 ],
-            ]
-        );
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -38,7 +46,7 @@ class Order_detailsController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new Order_detailsSearch();
+        $searchModel = new OrderDetailsSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('index', [

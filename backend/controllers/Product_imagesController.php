@@ -3,8 +3,9 @@
 namespace backend\controllers;
 
 use app\models\ProductImages;
-use frontend\models\Product_imagesSearch;
+use app\models\ProductImagesSearch;
 use Yii;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -20,17 +21,24 @@ class Product_imagesController extends Controller
      */
     public function behaviors()
     {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['superAdmin'],
+                        'permissions' =>['P/I']
                     ],
                 ],
-            ]
-        );
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -40,7 +48,7 @@ class Product_imagesController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new Product_imagesSearch();
+        $searchModel = new ProductImagesSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
         return $this->render('index', [
@@ -51,7 +59,7 @@ class Product_imagesController extends Controller
 
     /**
      * Displays a single ProductImages model.
-     * @param int $id ID
+     * @param int $id
      * @return string
      * @throws NotFoundHttpException if the model cannot be found
      */
@@ -99,7 +107,7 @@ class Product_imagesController extends Controller
     /**
      * Updates an existing ProductImages model.
      * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
+     * @param int $id
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
@@ -119,7 +127,7 @@ class Product_imagesController extends Controller
     /**
      * Deletes an existing ProductImages model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
+     * @param int $id
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
@@ -133,7 +141,7 @@ class Product_imagesController extends Controller
     /**
      * Finds the ProductImages model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
+     * @param int $id
      * @return ProductImages the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */

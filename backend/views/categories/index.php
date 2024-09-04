@@ -37,8 +37,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, Categories $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
-                 }
+                 },
+
+            'visibleButtons' => [
+                'view' => Yii::$app->user->can('viewCategories'),
+                'update' => Yii::$app->user->can('updateCategories'),
+                'delete' => Yii::$app->user->can('deleteCategories'),
             ],
+
+                ]
         ],
     ]); ?>
 

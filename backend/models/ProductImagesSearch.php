@@ -1,15 +1,15 @@
 <?php
 
-namespace frontend\models;
+namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\ProductImages;
 
 /**
- * Product_imagesSearch represents the model behind the search form of `app\models\ProductImages`.
+ * ProductImagesSearch represents the model behind the search form of `app\models\ProductImages`.
  */
-class Product_imagesSearch extends ProductImages
+class ProductImagesSearch extends ProductImages
 {
     /**
      * {@inheritdoc}

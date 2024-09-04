@@ -1,5 +1,7 @@
 <?php
 
+namespace archive;
+
 use yii\db\Migration;
 
 /**

@@ -41,6 +41,12 @@ class OrderDetails extends \yii\db\ActiveRecord
         ];
     }
 
+    public function getProductImage()
+    {
+        return $this->hasOne(ProductImages::class, ['product_id' => 'product_id']);
+    }
+
+
     /**
      * {@inheritdoc}
      */
@@ -74,4 +80,6 @@ class OrderDetails extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Products::class, ['id' => 'product_id']);
     }
+
+
 }

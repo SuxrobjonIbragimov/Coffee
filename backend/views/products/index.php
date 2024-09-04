@@ -34,11 +34,18 @@ $this->params['breadcrumbs'][] = $this->title;
             'name_en',
             'name_ru',
             'price',
-            'discount_price',
+//            'discount_price',
             [
                 'attribute' => 'status',
                 'value' => function($model) {
                     return $model->status == 1 ? 'Active' : 'Inactive';
+                },
+            ],
+            [
+                'attribute' => 'type',
+                'value' => function($model) {
+                    $types = [0 => 'Specialty', 1 => 'Usual', 2 => 'Premium', 3 => 'Trending'];
+                    return isset($types[$model->type]) ? $types[$model->type] : 'N/A';
                 },
             ],
             [
@@ -48,14 +55,23 @@ $this->params['breadcrumbs'][] = $this->title;
                 },
             ],
 
+
             [
                 'class' => ActionColumn::className(),
                 'urlCreator' => function ($action, Products $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
-                 }
+                 },
+
+            'visibleButtons' => [
+                'view' => Yii::$app->user->can('viewProducts'),
+                'update' => Yii::$app->user->can('updateProducts'),
+                'delete' => Yii::$app->user->can('deleteProducts'),
             ],
+             ]
         ],
-    ]); ?>
+    ]);
+
+    ?>
 
 
 </div>

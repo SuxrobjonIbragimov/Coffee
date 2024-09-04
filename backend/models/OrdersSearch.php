@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use common\models\User;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\Orders;
@@ -11,15 +12,17 @@ use app\models\Orders;
  */
 class OrdersSearch extends Orders
 {
+
+    public $username;
+
     /**
      * {@inheritdoc}
      */
     public function rules()
     {
         return [
-            [['id'], 'integer'],
-            [['customer_name', 'customer_email'], 'safe'],
-            [['total_price'], 'number'],
+            [['id', 'user_id'], 'integer'],
+            [['name', 'surname', 'phone', 'address','username', 'delivery_type', 'payment_type'], 'safe'],
         ];
     }
 
@@ -42,12 +45,18 @@ class OrdersSearch extends Orders
     public function search($params)
     {
         $query = Orders::find();
+        $query->joinWith('user');
 
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
+
+        $dataProvider->sort->attributes['username'] = [
+            'asc' => [User::tableName() . '.username' => SORT_ASC],
+            'desc' => [User::tableName() . '.username' => SORT_DESC],
+        ];
 
         $this->load($params);
 
@@ -60,12 +69,16 @@ class OrdersSearch extends Orders
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'total_price' => $this->total_price,
+            'user_id' => $this->user_id,
         ]);
 
-        $query->andFilterWhere(['ilike', 'customer_name', $this->customer_name])
-            ->andFilterWhere(['ilike', 'customer_email', $this->customer_email]);
-
+        $query->andFilterWhere(['ilike', 'name', $this->name])
+            ->andFilterWhere(['ilike', 'surname', $this->surname])
+            ->andFilterWhere(['ilike', 'phone', $this->phone])
+            ->andFilterWhere(['ilike', 'address', $this->address])
+            ->andFilterWhere(['ilike', 'delivery_type', $this->delivery_type])
+            ->andFilterWhere(['ilike', 'payment_type', $this->payment_type])
+            ->andFilterWhere(['like', User::tableName() . '.username', $this->username]);
         return $dataProvider;
     }
 }

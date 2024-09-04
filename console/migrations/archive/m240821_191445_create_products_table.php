@@ -1,5 +1,7 @@
 <?php
 
+namespace archive;
+
 use yii\db\Migration;
 
 /**
@@ -15,7 +17,7 @@ class m240821_191445_create_products_table extends Migration
             'name_en' => $this->string(255)->notNull(),
             'name_ru' => $this->string(255)->notNull(),
             'description' => $this->text(),
-            'price' => $this->decimal(10,2)->notNull(),
+            'price' => $this->decimal(10, 2)->notNull(),
             'category_id' => $this->integer()->notNull(),
         ]);
 

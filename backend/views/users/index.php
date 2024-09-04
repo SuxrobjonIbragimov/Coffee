@@ -31,20 +31,29 @@ $this->params['breadcrumbs'][] = $this->title;
 
             'id',
             'username',
-            'auth_key',
-            'password_hash',
-            'password_reset_token',
-            //'email:email',
-            //'status',
+//            'auth_key',
+//            'password_hash',
+//            'password_reset_token',
+            'email:email',
+            'status',
             //'created_at',
             //'updated_at',
             //'verification_token',
+
             [
                 'class' => ActionColumn::className(),
+                'template' => '{view} {update}',
                 'urlCreator' => function ($action, Users $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
-                 }
+                 },
+
+
+            'visibleButtons' => [
+                'view' => Yii::$app->user->can('viewUsers'),
+                'update' => Yii::$app->user->can('updateUsers'),
+                'delete' => Yii::$app->user->can('deleteUsers'),
             ],
+                ]
         ],
     ]); ?>
 

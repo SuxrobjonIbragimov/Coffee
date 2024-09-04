@@ -7,6 +7,8 @@ use yii\helpers\Html;
 $this->title = 'About';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<link rel="stylesheet" href="<?= Yii::getAlias('@web/coffee/css/bootstrap.min.css') ?>">
+
 <div class="site-about">
     <h1><?= Html::encode($this->title) ?></h1>
 

@@ -1136,3 +1136,139 @@ on the image of the gif */
   width: 210px;
 }
 
+
+/*=============== Basket ===============*/
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.cart-container {
+  width: 80%;
+  margin: 50px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.item-info {
+  display: flex;
+  align-items: center;
+}
+
+.item-info img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 15px;
+}
+
+.item-info h3 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.item-info p {
+  font-size: 14px;
+  margin: 5px 0 0;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #aaa;
+  margin-right: 10px;
+}
+
+.discounted-price {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+}
+
+.btn-quantity {
+  background-color: #e0e0e0;
+  border: none;
+  padding: 5px 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+input[type="number"] {
+  width: 50px;
+  text-align: center;
+  margin: 0 10px;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.delete-link {
+  color: #007bff;
+  text-decoration: none;
+  margin-left: 20px;
+}
+
+.order-summary {
+  padding: 15px;
+  background: #f4f4f4;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.order-summary h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.order-summary p {
+  margin: 5px 0;
+}
+
+.order-summary p span {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.btn-formalization {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  margin-left: 10px;
+}
+
+

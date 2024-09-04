@@ -17,10 +17,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a(Yii::t('app', 'Create Orders'), ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
-
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <?= GridView::widget([
@@ -30,15 +26,28 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
 
             'id',
-            'customer_name',
-            'customer_email:email',
-            'total_price',
+            'name',
+            'surname',
+            'phone',
+            'address',
+            'delivery_type',
+            'payment_type',
+            [
+                'attribute' => 'username',
+                'value' => 'user.username',
+            ],
             [
                 'class' => ActionColumn::className(),
+                'template' => '{view} {update}',
                 'urlCreator' => function ($action, Orders $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
-                 }
+                 },
+
+            'visibleButtons' => [
+                'view' => Yii::$app->user->can('viewOrders'),
+                'update' => Yii::$app->user->can('updateOrders'),
             ],
+                ]
         ],
     ]); ?>
 

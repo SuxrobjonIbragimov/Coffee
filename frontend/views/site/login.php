@@ -6,10 +6,18 @@
 
 use yii\bootstrap5\Html;
 use yii\bootstrap5\ActiveForm;
+use yii\helpers\Url;
 
 $this->title = 'Login';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<style>
+    .site-login{
+        margin-left: 30%;
+    }
+</style>
+<link rel="stylesheet" href="<?= Yii::getAlias('@web/coffee/css/bootstrap.min.css') ?>">
+
 <div class="site-login">
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -32,7 +40,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 </div>
 
                 <div class="form-group">
-                    <?= Html::submitButton('Login', ['class' => 'btn btn-primary', 'name' => 'login-button']) ?>
+                    <?= Html::submitButton('Login', ['class' => 'btn btn-primary', 'name' => 'login-button']) ?>&nbsp;
+                    <a href="<?= Url::to(['site/signup']) ?>" class="">Signup</a>
                 </div>
 
             <?php ActiveForm::end(); ?>

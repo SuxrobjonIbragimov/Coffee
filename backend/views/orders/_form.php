@@ -1,5 +1,7 @@
 <?php
 
+use common\models\User;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -12,11 +14,26 @@ use yii\widgets\ActiveForm;
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model, 'customer_name')->textInput(['maxlength' => true]) ?>
+    <?php
+    $products = User::find()->all();
+    echo $form->field($model, 'user_id')->dropDownList(
+        ArrayHelper::map($products, 'id', 'username'),
+        ['prompt' => 'Select Product']
+    );
+    ?>
 
-    <?= $form->field($model, 'customer_email')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'total_price')->textInput() ?>
+    <?= $form->field($model, 'surname')->textInput(['maxlength' => true]) ?>
+
+    <?= $form->field($model, 'phone')->textInput(['maxlength' => true]) ?>
+
+    <?= $form->field($model, 'address')->textInput(['maxlength' => true]) ?>
+
+    <?= $form->field($model, 'delivery_type')->textInput(['maxlength' => true]) ?>
+
+    <?= $form->field($model, 'payment_type')->textInput(['maxlength' => true]) ?>
+
 
     <div class="form-group">
         <?= Html::submitButton(Yii::t('app', 'Save'), ['class' => 'btn btn-success']) ?>

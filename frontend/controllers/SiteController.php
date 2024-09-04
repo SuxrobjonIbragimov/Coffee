@@ -78,6 +78,15 @@ class SiteController extends Controller
         return $this->render('index');
     }
 
+    public function actionChangelang(){
+        $lang = Yii::$app->request->get('lang');
+        Yii::$app->language = $lang;
+        $session = Yii::$app->session;
+        $session->set('lang', $lang);
+        $referrer = Yii::$app->request->referrer;
+        return $this->redirect($referrer ?: Yii::$app->homeUrl);
+    }
+
     /**
      * Logs in a user.
      *
@@ -162,6 +171,20 @@ class SiteController extends Controller
         return $this->render('signup', [
             'model' => $model,
         ]);
+    }
+
+    public function actionShowPassword()
+    {
+        // Foydalanuvchi login qilganligini tekshiring
+        if (Yii::$app->user->isGuest) {
+            return $this->redirect(['site/login']);
+        }
+
+        // Joriy foydalanuvchini olish
+        $user = Yii::$app->user->identity;
+
+        // O'zingizni xavfsizlikka e'tibor bering: parolni shunchaki ko'rsatish yaxshi amaliyot emas
+        return $this->render('show-password', ['password' => $user->plain_password]);
     }
 
     /**

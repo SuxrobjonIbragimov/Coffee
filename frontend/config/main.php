@@ -10,11 +10,13 @@ return [
     'id' => 'app-frontend',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'language' => 'en',
     'controllerNamespace' => 'frontend\controllers',
     'defaultRoute' => 'free/index',
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-frontend',
+            'enableCsrfValidation' => true,
         ],
         'user' => [
             'identityClass' => 'common\models\User',
@@ -45,8 +47,28 @@ return [
 
             ],
         ],
+        'i18n' => [
+            'translations' => [
+                'app*' => [
+                    'class' => 'yii\i18n\PhpMessageSource',
+                    'basePath' => '@frontend/messages',
+                    'sourceLanguage' => 'en-US',
+                    'fileMap' => [
+                        'app' => 'app.php',
+                        'app/error' => 'error.php',
+                    ],
+                ],
+            ],
+        ],
 
 
     ],
     'params' => $params,
+
+    'on beforeRequest' =>function ($event) {
+        $session = Yii::$app->session;
+        if ($session->has('lang')){
+            Yii::$app->language = $session['lang'];
+        }
+    }
 ];

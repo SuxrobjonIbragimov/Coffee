@@ -12,12 +12,17 @@ use app\models\Products;
 class ProductsSearch extends Products
 {
     public $cname_uz;
-
+    const TYPE_MAP = [
+        'specialty' => 0,
+        'usual' => 1,
+        'premium' => 2,
+        'trending' => 3,
+    ];
     public function rules()
     {
         return [
-            [['id',], 'integer'],
-            [['name_uz','name_ru','name_en','discount_price','status','cname_uz'], 'safe'],
+            [['id'], 'integer'],
+            [['name_uz','name_ru','name_en','discount_price','status','cname_uz', 'type'], 'safe'],
             [['price'], 'number'],
         ];
     }
@@ -37,11 +42,31 @@ class ProductsSearch extends Products
             return $dataProvider;
         }
 
-// Filtering conditions
+        $statusValue = null;
+        if ($this->status !== null && is_string($this->status)) {
+            $statusLower = strtolower($this->status);
+            if ($statusLower == 'active') {
+                $statusValue = 1;
+            } elseif ($statusLower == 'inactive') {
+                $statusValue = 0;
+            }
+        }
+
+        $typeValue = null;
+        if ($this->type !== null && is_string($this->type)) {
+            $typeLower = strtolower($this->type);
+            if (array_key_exists($typeLower, self::TYPE_MAP)) {
+                $typeValue = self::TYPE_MAP[$typeLower];
+            }
+        }
+
+        // Filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
             'price' => $this->price,
             'discount_price' => $this->discount_price,
+            'status' => $statusValue,
+            'type' => $typeValue,
         ]);
 
         $query->andFilterWhere(['ilike', 'name_uz', $this->name_uz])
@@ -50,6 +75,5 @@ class ProductsSearch extends Products
             ->andFilterWhere(['ilike', 'categories.cname_uz', $this->cname_uz]);
 
         return $dataProvider;
-
     }
 }

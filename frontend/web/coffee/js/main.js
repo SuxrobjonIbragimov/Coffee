@@ -114,3 +114,11 @@ document.getElementById('toggleCategories').addEventListener('click', function()
         arrowIcon.classList.replace('bx-up-arrow-alt', 'bx-down-arrow-alt');
     }
 });
+
+/*=============== Basket ===============*/
+document.getElementById('selectAll').addEventListener('change', function() {
+    let checkboxes = document.querySelectorAll('.select-item');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+});

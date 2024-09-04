@@ -9,6 +9,8 @@ use yii\helpers\Html;
 
 $this->title = $name;
 ?>
+<link rel="stylesheet" href="<?= Yii::getAlias('@web/coffee/css/bootstrap.min.css') ?>">
+
 <div class="site-error">
 
     <h1><?= Html::encode($this->title) ?></h1>

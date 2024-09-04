@@ -45,4 +45,6 @@ class Categories extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Products::class, ['category_id' => 'id']);
     }
+
+
 }
